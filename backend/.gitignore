@@ -1,4 +1,21 @@
-# created by virtualenv automatically
+# Virtual environment
+venv/
 env/
+.venv/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Django
+db.sqlite3
+*.log
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
