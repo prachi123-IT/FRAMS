@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from django.http import JsonResponse
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 def home(request):
     return JsonResponse({"message": "FRAMS Backend Running"})
@@ -27,4 +30,12 @@ urlpatterns = [
     path('api/students/', include('students.urls')),
     path('api/faculty/', include('faculty.urls')),
     path('api/attendance/', include('attendance.urls')),
+    path('api/auth/', include('rest_framework.urls')),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )

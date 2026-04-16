@@ -3,24 +3,54 @@ import cv2
 import numpy as np
 import face_recognition
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import StudentProfile, Attendance
-from django.views.decorators.csrf import csrf_exempt
+from .models import StudentProfile ,AcademicRecord
 from students.services.face_utils import detect_blink
-from django.utils import timezone
-from attendance.models import AttendanceSession
+from attendance.utils import calculate_attendance_percentage
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from .serializers import StudentSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import StudentProfile
 
-@login_required
+
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def student_dashboard(request):
     if request.user.role != 'STUDENT':
         return JsonResponse({'error':'Unauthorized'},status=403)
+
+    try:
+        student = StudentProfile.objects.get(user=request.user)
+    except StudentProfile.DoesNotExist:
+        return JsonResponse({
+        "profile_exists": False,
+        "message": "Please complete your profile"
+    }, status=200)
+    attendance_percentage=calculate_attendance_percentage(student)
+    records=AcademicRecord.objects.filter(student=student).order_by("year","semester")
     
+    academics = []
+    for r in records:
+        academics.append({
+            "year": r.year,
+            "semester": r.semester,
+            "cgpa": r.cgpa,
+            "verified": r.verified
+        })
+
     return JsonResponse({
-        'message':'Welcome Student',
-        'username':request.user.username
+        "roll_no": student.roll_no,
+        "department": student.department,
+        "year": student.year,
+        "attendance_percentage": attendance_percentage,
+        "academics": academics
     })
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def student_list(request):
     if request.user.role != 'FACULTY':
         return JsonResponse({'error':'Unauthorized'},status=403)
@@ -34,12 +64,12 @@ def student_list(request):
             'roll_no': s.roll_no,
             'department': s.department,
             'year': s.year,
-            'semester': s.semester
         })
 
     return JsonResponse(data, safe=False)
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def student_detail(request, student_id):
     if request.user.role != 'FACULTY':
         return JsonResponse({'error':'Unauthorized'},status=403)
@@ -54,11 +84,10 @@ def student_detail(request, student_id):
         'roll_no': s.roll_no,
         'department': s.department,
         'year': s.year,
-        'semester': s.semester
     })
 
-@csrf_exempt
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def register_face(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=400)
@@ -66,7 +95,7 @@ def register_face(request):
     if request.user.role != 'STUDENT':
         return JsonResponse({'error': 'Unauthorized'}, status=403)
 
-    image_data = request.POST.get('image')
+    image_data = request.data.get('image')
     if not image_data:
         return JsonResponse({'error': 'No image provided'}, status=400)
 
@@ -111,126 +140,194 @@ def register_face(request):
         'message': 'Face registered successfully'
     })
 
-@csrf_exempt
-@login_required
-def mark_attendance(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=400)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_marksheet(request):
 
-    if request.user.role != 'STUDENT':
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    student = StudentProfile.objects.get(user=request.user)
 
-    #  STEP 1: Check active attendance session (ADD HERE)
-    session = AttendanceSession.objects.filter(is_active=True).first()
-    if not session:
-        return JsonResponse({
-            "error": "No active attendance session"
-        }, status=403)
+    semester = request.POST.get("semester")
+    cgpa = request.POST.get("cgpa")
+    year = request.POST.get("year")
 
-    #  STEP 2: Get image
-    image_data = request.POST.get('image')
+    if not semester or not year:
+        return Response({"error": "Year and Semester required"}, status=400)
+
+    record, created = AcademicRecord.objects.get_or_create(
+        student=student,
+        year=year,
+        semester=semester
+    )
+
+    if cgpa:
+        record.cgpa = cgpa
+
+    if request.FILES.get("marksheet"):
+        record.marksheet = request.FILES.get("marksheet")
+
+    record.verified = False   
+    record.save()
+
+    return Response({"message": "Semester data saved"})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_face(request):
+    if request.user.role != "STUDENT":
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    image_data = request.data.get('image')
     if not image_data:
-        return JsonResponse({'error': 'No image provided'}, status=400)
+        return JsonResponse({'error': 'No image'}, status=400)
 
-    #  STEP 3: Decode image
-    try:
-        img_bytes = base64.b64decode(image_data)
-        np_arr = np.frombuffer(img_bytes, np.uint8)
-        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-    except Exception:
-        return JsonResponse({"error": "Invalid image"}, status=400)
+    img_bytes = base64.b64decode(image_data)
+    np_arr = np.frombuffer(img_bytes, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-    if img is None:
-        return JsonResponse({'error': 'Invalid image'}, status=400)
-
-    #  STEP 4: Detect face
-    face_locations = face_recognition.face_locations(img)
-    if len(face_locations) != 1:
-        return JsonResponse({'error': 'Exactly one face required'}, status=400)
-
-    face_encoding = face_recognition.face_encodings(img, face_locations)[0]
-
-    #  STEP 5: Load stored face encoding
     student = StudentProfile.objects.get(user=request.user)
 
     if not student.face_encoding:
-        return JsonResponse({'error': 'Face not registered'}, status=400)
+        return JsonResponse({"error": "Face not registered"}, status=400)
 
-    stored_encoding = np.array(eval(student.face_encoding))
+    face_locations = face_recognition.face_locations(img)
+    if not face_locations:
+        return JsonResponse({"error": "No face detected"}, status=400)
 
-    #  STEP 6: Compare faces
-    matches = face_recognition.compare_faces(
-        [stored_encoding], face_encoding, tolerance=0.45
-    )
+    encoding = face_recognition.face_encodings(img, face_locations)[0]
 
-    if not matches[0]:
-        return JsonResponse({'error': 'Face mismatch'}, status=403)
+    known = np.array(student.face_encoding)
+    match = face_recognition.compare_faces([known], encoding)[0]
 
-    #  STEP 7: Mark attendance
-    today = timezone.now().date()
+    if not match:
+        return JsonResponse({"error": "Face not matched"}, status=403)
 
-    attendance, created = Attendance.objects.get_or_create(
-        student=student,
-        date=today
-    )
+    return JsonResponse({"message": "Face verified"})
 
-    if not created:
-        return JsonResponse({
-            "message": "Attendance already marked",
-            "date": str(today)
-        })
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_student_profile(request):
+    if request.user.role != "STUDENT":
+        return JsonResponse({"error": "Unauthorized"}, status=403)
 
-    attendance.status = True
-    attendance.save()
-
-    return JsonResponse({
-        'message': 'Attendance marked successfully',
-        'date': str(today)
-    })
-
-@login_required
-def student_attendance_history(request):
-    if request.user.role!='STUDENT':
-        return JsonResponse({'error':'Unauthorized'},status=403)
-    
-    student=StudentProfile.objects.get(user=request.user)
-
-    records=Attendance.objects.filter(student=student).order_by('-date')
-    data=[]
-    for r in records:
-        data.append({
-            'date':r.date,
-            'status':r.status
-        })
-
-    return JsonResponse({
-        'student':student.roll_no,
-        'attendance':data
-    })
-
-@login_required
-def faculty_student_attendance(request, roll_no):
-    if request.user.role not in ['FACULTY','ADMIN']:
-        return JsonResponse({'error':'Unauthorized'},status=403)
-    
     try:
-        student=StudentProfile.objects.get(roll_no=roll_no)
+        student = StudentProfile.objects.get(user=request.user)
     except StudentProfile.DoesNotExist:
-        return JsonResponse({'error':'Student Not Found'},status=404)
+        return JsonResponse({"profile_exists": False})
 
-    records = Attendance.objects.filter(student=student).order_by('-date')
+    semesters = AcademicRecord.objects.filter(student=student).order_by("semester")
 
-    data = []
-    for r in records:
-        data.append({
-            'date': r.date,
-            'status': r.status
-        })
+    semester_data = []
+    for sem in semesters:
+        semester_data.append({
+           "semester": sem.semester,
+           "cgpa": sem.cgpa,
+           "verified": sem.verified if hasattr(sem, "verified") else True,
+           "marksheet": sem.marksheet.url if sem.marksheet else None
+    })
 
     return JsonResponse({
-        'student': student.roll_no,
-        'attendance': data
-    })    
+    "profile_exists": True,
+    "name": student.name,
+    "roll_no": student.roll_no,
+    "department": student.department,
+    "year": student.year,
+    "semester": student.semester,
+    "academics": semester_data
+})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_student_profile(request):
+    if request.user.role != "STUDENT":
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    roll_no = request.data.get("roll_no")
+
+    # Check if roll number already exists for another user
+    existing = StudentProfile.objects.filter(roll_no=roll_no).exclude(user=request.user).first()
+    if existing:
+        return JsonResponse({
+            "error": "Roll number already exists"
+        }, status=400)
+
+    try:
+        profile = StudentProfile.objects.get(user=request.user)
+        created = False
+    except StudentProfile.DoesNotExist:
+        profile = StudentProfile(user=request.user)
+        created = True
+
+    profile.name = request.data.get("name")
+    profile.roll_no = roll_no
+    profile.department = request.data.get("department")
+    profile.semester = request.data.get("semester")
+    profile.year = request.data.get("year")
+ 
 
 
+    profile.save()
 
+    return JsonResponse({
+        "message": "Profile saved successfully",
+        "created": created
+    })
+
+class StudentListView(APIView):
+
+    def get(self, request):
+        year = request.GET.get("year")
+        semester = request.GET.get("semester")
+        department = request.GET.get("department")
+
+        students = StudentProfile.objects.all()
+
+        if year and year.isdigit():
+            students = students.filter(year=int(year))
+            print("Year:", year)
+
+        if semester and semester.isdigit():
+            students = students.filter(semester=int(semester))
+            print("Semester:", semester)
+
+        if department:
+            students = students.filter(department__iexact=department)
+            print("Department:", department)
+
+        print("Total Students Before Filter:", StudentProfile.objects.count())
+        print("Filtered Count:", students.count())    
+
+       
+        serializer = StudentSerializer(students, many=True)
+        return Response(serializer.data)
+    
+   
+    
+class StudentDetailView(APIView):
+
+    def get(self, request, roll_no):
+        try:
+            student = StudentProfile.objects.get(roll_no=roll_no)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student not found"}, status=404)
+
+        semesters = AcademicRecord.objects.filter(student=student).order_by("semester")
+
+        semester_data = []
+
+        for sem in semesters:
+            semester_data.append({
+                "semester": sem.semester,
+                "cgpa": sem.cgpa,
+                "verified": sem.verified,
+                "marksheet": sem.marksheet.url if sem.marksheet else None
+            })
+
+        return Response({
+            "name": student.name,
+            "roll_no": student.roll_no,
+            "department": student.department,
+            "year": student.year,
+            "semester": student.semester,
+            "face_registered": bool(student.face_encoding),
+            "academics": semester_data
+       }) 

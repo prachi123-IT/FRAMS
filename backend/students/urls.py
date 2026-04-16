@@ -1,13 +1,13 @@
 from django.urls import path
-from .views import student_dashboard,student_list,student_detail,register_face,mark_attendance
-from . import views
+from .views import student_dashboard,register_face, upload_marksheet, verify_face,get_student_profile,save_student_profile,StudentListView,StudentDetailView 
 
-urlpatterns=[
+urlpatterns = [
     path('dashboard/', student_dashboard),
-    path('', student_list),
-    path('<int:student_id>/', student_detail),
     path('register-face/', register_face),
-    path('attendance/mark/', mark_attendance),
-     path('attendance/history/', views.student_attendance_history),
-    path('attendance/student/<str:roll_no>/', views.faculty_student_attendance),
+    path("upload-marksheet/", upload_marksheet),
+    path("verify-face/", verify_face),
+    path("profile/", get_student_profile),
+    path("profile/save/", save_student_profile),
+    path("students/", StudentListView.as_view()),
+    path("faculty/student/<str:roll_no>/", StudentDetailView.as_view()),
 ]
