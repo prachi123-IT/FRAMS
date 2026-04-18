@@ -141,6 +141,8 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://frams-front-git-main-prachi123-its-projects.vercel.app",
+    "https://frams-frontend.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
