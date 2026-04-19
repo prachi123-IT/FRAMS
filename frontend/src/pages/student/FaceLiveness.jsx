@@ -14,7 +14,6 @@ function FaceLiveness() {
   const [turned, setTurned] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  
   useEffect(() => {
     const loadModels = async () => {
       await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
@@ -24,7 +23,6 @@ function FaceLiveness() {
     loadModels();
   }, []);
 
-  // Auto Detection Loop
   useEffect(() => {
     if (!modelsLoaded) return;
 
@@ -44,12 +42,10 @@ function FaceLiveness() {
       const leftEye = landmarks.getLeftEye();
       const nose = landmarks.getNose();
 
-      // Blink detection
       if (leftEye[1].y - leftEye[5].y < 2) {
         setBlinked(true);
       }
 
-      // Head turn detection
       if (nose[0].x - nose[3].x > 5 || nose[3].x - nose[0].x > 5) {
         setTurned(true);
       }
@@ -59,73 +55,81 @@ function FaceLiveness() {
     return () => clearInterval(interval);
   }, [modelsLoaded]);
 
-  // Auto capture when both done
   useEffect(() => {
     if (blinked && turned) {
       captureAndSend();
     }
   }, [blinked, turned]);
 
-
   const captureAndSend = async () => {
-    if (processing) return;   
+    if (processing) return;
 
     try {
       setProcessing(true);
 
-      console.log("📸 Capturing image...");
-
       const imageSrc = webcamRef.current.getScreenshot();
-
       if (!imageSrc) {
-        console.log("❌ Screenshot failed");
         setProcessing(false);
         return;
       }
 
       const base64 = imageSrc.split(",")[1];
 
-      console.log("🚀 Sending to backend...");
-
-      const response = await api.post(
-        `attendance/mark-face/${sessionId}/`,
-        { image: base64 }
-      );
-
-      console.log("✅ Backend Response:", response.data);
+      await api.post(`attendance/mark-face/${sessionId}/`, {
+        image: base64,
+      });
 
       alert("Attendance Marked Successfully ✅");
       navigate("/student/success");
 
     } catch (err) {
-      console.log("❌ FULL ERROR:", err.response);
-      console.log("❌ ERROR DATA:", err.response?.data);
-
       alert(JSON.stringify(err.response?.data));
-
       setProcessing(false);
     }
   };
 
-
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>AI Face Liveness Verification</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900 px-4">
+      
+      <div className="w-full max-w-lg bg-white/10 backdrop-blur-xl 
+                      rounded-2xl p-6 sm:p-8 shadow-2xl border border-white/20">
 
-      {!modelsLoaded && <p>Loading AI Models...</p>}
+        <h2 className="text-xl sm:text-2xl font-bold text-white text-center mb-6">
+          AI Face Liveness Verification
+        </h2>
 
-      <Webcam
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        width={350}
-      />
+        {!modelsLoaded && (
+          <p className="text-center text-gray-200 mb-4">
+            Loading AI Models...
+          </p>
+        )}
 
-      <div>
-        <p>Blink: {blinked ? "✅" : "❌"}</p>
-        <p>Head Turn: {turned ? "✅" : "❌"}</p>
+        {/* Webcam Container */}
+        <div className="flex justify-center mb-6">
+          <Webcam
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            className="w-full max-w-sm rounded-xl border-4 border-white/20"
+          />
+        </div>
+
+        {/* Status Indicators */}
+        <div className="space-y-2 text-center">
+          <p className="text-white">
+            Blink: {blinked ? "✅" : "❌"}
+          </p>
+          <p className="text-white">
+            Head Turn: {turned ? "✅" : "❌"}
+          </p>
+        </div>
+
+        {processing && (
+          <p className="text-center text-yellow-300 mt-4 animate-pulse">
+            Verifying Face...
+          </p>
+        )}
+
       </div>
-
-      {processing && <p>Verifying Face...</p>}
     </div>
   );
 }

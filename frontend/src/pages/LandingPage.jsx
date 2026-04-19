@@ -6,9 +6,16 @@ function LandingPage() {
   return (
     <div
       onClick={() => navigate("/select-role")}
-      className="h-screen w-full bg-cover bg-center cursor-pointer"
-      style={{ backgroundImage: "url('/FRAMS.png')" }}
+      className="relative w-full h-screen 
+                 bg-[url('/FRAMS.png')] 
+                 bg-center 
+                 bg-contain 
+                 sm:bg-cover 
+                 bg-no-repeat
+                 flex items-center justify-center
+                 cursor-pointer"
     >
+     
     </div>
   );
 }

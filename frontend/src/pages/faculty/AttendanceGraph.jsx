@@ -48,50 +48,68 @@ function AttendanceGraph() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-white p-10">
+  <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800 text-white px-4 sm:px-6 md:px-10 py-8">
 
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          Attendance Analytics
-        </h1>
-        <p className="text-white/70 mt-2">
-          Track student attendance day-wise
+    {/* HEADER */}
+    <div className="mb-8">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        Attendance Analytics
+      </h1>
+      <p className="text-white/70 mt-2 text-sm sm:text-base">
+        Track student attendance day-wise
+      </p>
+    </div>
+
+    {/* FILTERS */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+      <select
+        value={year}
+        onChange={(e) => setYear(e.target.value)}
+        className="p-3 rounded-lg text-black w-full"
+      >
+        <option value="">Year</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+
+      <select
+        value={semester}
+        onChange={(e) => setSemester(e.target.value)}
+        className="p-3 rounded-lg text-black w-full"
+      >
+        <option value="">Semester</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+
+      <select
+        value={branch}
+        onChange={(e) => setBranch(e.target.value)}
+        className="p-3 rounded-lg text-black w-full"
+      >
+        <option value="">Branch</option>
+        <option value="CSE">CSE</option>
+        <option value="IT">IT</option>
+      </select>
+
+    </div>
+
+    {/* GRAPH CARD */}
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl">
+
+      {data.length === 0 ? (
+        <p className="text-center text-white/60 py-10">
+          No attendance data available
         </p>
-      </div>
-
-      {/* FILTERS */}
-      <div className="flex gap-4 mb-6">
-
-        <select value={year} onChange={(e) => setYear(e.target.value)} className="p-2 rounded text-black">
-          <option value="">Year</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-
-        <select value={semester} onChange={(e) => setSemester(e.target.value)} className="p-2 rounded text-black">
-          <option value="">Semester</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-        </select>
-
-        <select value={branch} onChange={(e) => setBranch(e.target.value)} className="p-2 rounded text-black">
-          <option value="">Branch</option>
-          <option value="CSE">CSE</option>
-          <option value="IT">IT</option>
-        </select>
-
-      </div>
-
-      {/* GRAPH CARD */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl">
-
-        <ResponsiveContainer width="100%" height={400}>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={data}>
 
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
@@ -103,10 +121,10 @@ function AttendanceGraph() {
             <Bar
               dataKey="present"
               fill="#22c55e"
-              radius={[10, 10, 0, 0]}
+              radius={[8, 8, 0, 0]}
               cursor="pointer"
               onClick={(barData) => {
-                if (barData && barData.payload && barData.payload.date) {
+                if (barData?.payload?.date) {
                   navigate(
                     `/faculty/attendance/${barData.payload.date}?year=${year}&semester=${semester}&branch=${branch}`
                   );
@@ -116,11 +134,12 @@ function AttendanceGraph() {
 
           </BarChart>
         </ResponsiveContainer>
-
-      </div>
+      )}
 
     </div>
-  );
+
+  </div>
+);
 }
 
 export default AttendanceGraph;

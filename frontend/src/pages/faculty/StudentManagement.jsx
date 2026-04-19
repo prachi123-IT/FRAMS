@@ -40,93 +40,125 @@ function StudentManagement() {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-10">
+  <div className="min-h-screen bg-slate-900 text-white px-4 sm:px-6 md:px-10 py-6 sm:py-10">
 
-      <div className="flex flex-wrap gap-4 items-center mb-8 
-    bg-white/10 backdrop-blur-xl border border-white/20 
-    p-6 rounded-2xl shadow-xl">
+    {/* FILTER SECTION */}
+    <div className="
+      flex flex-col sm:flex-row flex-wrap 
+      gap-4 items-stretch sm:items-center 
+      mb-8 
+      bg-white/10 backdrop-blur-xl 
+      border border-white/20 
+      p-4 sm:p-6 
+      rounded-2xl shadow-xl
+    ">
 
-        {/* Year */}
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="bg-slate-800 text-white p-3 rounded-xl border border-white/20"
-        >
-          <option value="" hidden>Year</option>
-          <option value="1">First</option>
-          <option value="2">Second</option>
-          <option value="3">Third</option>
-          <option value="4">Fourth</option>
-        </select>
+      {/* Year */}
+      <select
+        value={year}
+        onChange={(e) => setYear(e.target.value)}
+        className="bg-slate-800 text-white p-3 rounded-xl border border-white/20 w-full sm:w-auto"
+      >
+        <option value="" hidden>Year</option>
+        <option value="1">First</option>
+        <option value="2">Second</option>
+        <option value="3">Third</option>
+        <option value="4">Fourth</option>
+      </select>
 
-        {/* Semester */}
-        <select
-          value={semester}
-          onChange={(e) => setSemester(e.target.value)}
-          className="bg-slate-800 text-white p-3 rounded-xl border border-white/20"
-        >
-          <option value="" hidden>Semester</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-        </select>
+      {/* Semester */}
+      <select
+        value={semester}
+        onChange={(e) => setSemester(e.target.value)}
+        className="bg-slate-800 text-white p-3 rounded-xl border border-white/20 w-full sm:w-auto"
+      >
+        <option value="" hidden>Semester</option>
+        {[1,2,3,4,5,6,7,8].map(num => (
+          <option key={num} value={num}>{num}</option>
+        ))}
+      </select>
 
-        {/* Department */}
-        <select
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-          className="bg-slate-800 text-white p-3 rounded-xl border border-white/20"
-        >
-          <option value="" hidden>Department</option>
-          <option value="CSE">CSE</option>
-          <option value="IT">IT</option>
-          <option value="ECE">ECE</option>
-          <option value="ME">ME</option>
-        </select>
+      {/* Department */}
+      <select
+        value={department}
+        onChange={(e) => setDepartment(e.target.value)}
+        className="bg-slate-800 text-white p-3 rounded-xl border border-white/20 w-full sm:w-auto"
+      >
+        <option value="" hidden>Department</option>
+        <option value="CSE">CSE</option>
+        <option value="IT">IT</option>
+        <option value="ECE">ECE</option>
+        <option value="ME">ME</option>
+      </select>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search student..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-slate-800 text-white p-3 rounded-xl border border-white/20 w-64"
-        />
-      </div>
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search student..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="
+          bg-slate-800 text-white 
+          p-3 rounded-xl 
+          border border-white/20 
+          w-full sm:w-64
+        "
+      />
+    </div>
 
-      {/* STUDENT LIST SECTION */}
-      <div className="space-y-4">
-        {filteredStudents.length === 0 ? (
-          <p className="text-gray-400">No students found</p>
-        ) : (
-          filteredStudents.map((student) => (
-            <div
-              key={student.id}
-              className="bg-white/10 p-6 rounded-xl flex justify-between items-center"
-            >
-              <div>
-                <h3 className="text-xl font-semibold">{student.name}</h3>
+    {/* STUDENT LIST */}
+    <div className="space-y-4">
 
-              </div>
-
-              <button
-                onClick={() => navigate(`/faculty/student/${student.roll_no}`)}
-                className="bg-blue-600 px-4 py-2 rounded-lg"
-              >
-                View Profile
-              </button>
+      {filteredStudents.length === 0 ? (
+        <p className="text-gray-400 text-center">No students found</p>
+      ) : (
+        filteredStudents.map((student) => (
+          <div
+            key={student.id}
+            className="
+              bg-white/10 
+              p-4 sm:p-6 
+              rounded-xl 
+              flex flex-col sm:flex-row 
+              justify-between 
+              items-start sm:items-center 
+              gap-4
+              backdrop-blur-md
+              border border-white/10
+            "
+          >
+            <div>
+              <h3 className="text-lg sm:text-xl font-semibold">
+                {student.name}
+              </h3>
+              <p className="text-sm text-white/60">
+                Roll No: {student.roll_no}
+              </p>
             </div>
-          ))
-        )}
-      </div>
+
+            <button
+              onClick={() =>
+                navigate(`/faculty/student/${student.roll_no}`)
+              }
+              className="
+                bg-blue-600 
+                px-4 py-2 
+                rounded-lg 
+                w-full sm:w-auto
+                hover:bg-blue-700
+                transition
+              "
+            >
+              View Profile
+            </button>
+          </div>
+        ))
+      )}
 
     </div>
-  );
+
+  </div>
+);
 }
 
 export default StudentManagement;

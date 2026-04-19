@@ -29,7 +29,7 @@ function StudentQRScan() {
 
           const sessionId = response.data.session_id;
 
-          scanner.clear(); // stop camera
+          await scanner.clear();
           navigate(`/student/face-scan/${sessionId}`);
 
         } catch (err) {
@@ -47,55 +47,31 @@ function StudentQRScan() {
   }, [navigate]);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Scan Attendance QR</h2>
-        <p style={styles.subtitle}>
+    <div className="min-h-screen flex items-center justify-center 
+                    bg-gradient-to-br from-indigo-500 to-purple-600 px-4">
+
+      <div className="w-full max-w-md bg-white 
+                      rounded-2xl shadow-2xl 
+                      p-6 sm:p-8 text-center">
+
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">
+          Scan Attendance QR
+        </h2>
+
+        <p className="text-gray-600 text-sm mb-6">
           Align the QR code inside the frame
         </p>
 
-        <div style={styles.scannerBox}>
-          <div id="qr-reader" />
+        <div className="rounded-xl overflow-hidden 
+                        border-4 border-indigo-500 
+                        p-3">
+          <div id="qr-reader" className="w-full" />
         </div>
+
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #667eea, #764ba2)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontFamily: "Arial, sans-serif",
-  },
-  card: {
-    background: "white",
-    padding: "40px",
-    borderRadius: "20px",
-    width: "400px",
-    textAlign: "center",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    marginBottom: "8px",
-  },
-  subtitle: {
-    fontSize: "14px",
-    color: "#666",
-    marginBottom: "20px",
-  },
-  scannerBox: {
-    borderRadius: "15px",
-    overflow: "hidden",
-    border: "3px solid #667eea",
-    padding: "10px",
-  },
-};
 
 export default StudentQRScan;
 

@@ -72,10 +72,7 @@ function App() {
           <ProtectedRoute role="STUDENT">
             <StudentRegister />
           </ProtectedRoute>} />
-        <Route path="/signup/student" element={
-          <ProtectedRoute role="STUDENT">
-            <StudentSignup />
-          </ProtectedRoute>} />
+       <Route path="/signup/student" element={<StudentSignup />} />
 
       </Routes>
     </BrowserRouter>

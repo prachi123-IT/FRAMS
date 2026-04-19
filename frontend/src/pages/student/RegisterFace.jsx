@@ -35,49 +35,71 @@ function RegisterFace() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Face Registration</h2>
-        <p style={styles.subtitle}>
+    <div className="min-h-screen flex items-center justify-center 
+                    bg-gradient-to-br from-blue-600 to-emerald-500 px-4">
+
+      <div className="w-full max-w-md bg-white 
+                      rounded-2xl shadow-2xl 
+                      p-6 sm:p-8 text-center">
+
+        <h2 className="text-xl sm:text-2xl font-bold mb-2">
+          Face Registration
+        </h2>
+
+        <p className="text-gray-600 text-sm mb-6">
           Please align your face properly and blink once.
         </p>
 
         {!imagePreview ? (
           <>
-            <div style={styles.cameraWrapper}>
+            {/* Camera */}
+            <div className="rounded-xl overflow-hidden mb-6 
+                            border-4 border-blue-500">
               <Webcam
                 ref={webcamRef}
                 screenshotFormat="image/jpeg"
-                style={styles.webcam}
+                className="w-full"
               />
             </div>
 
-            <button style={styles.primaryBtn} onClick={captureImage}>
+            <button
+              onClick={captureImage}
+              className="w-full bg-blue-600 hover:bg-blue-700 
+                         text-white py-3 rounded-lg 
+                         font-semibold transition duration-300"
+            >
               📸 Capture Photo
             </button>
           </>
         ) : (
           <>
-            <div style={styles.previewWrapper}>
+            {/* Preview */}
+            <div className="mb-6">
               <img
                 src={imagePreview}
                 alt="Preview"
-                style={styles.previewImage}
+                className="w-full rounded-xl 
+                           border-4 border-emerald-500"
               />
             </div>
 
-            <div style={styles.buttonRow}>
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                style={styles.successBtn}
                 onClick={registerFace}
                 disabled={loading}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 
+                           text-white py-2 rounded-lg 
+                           font-semibold transition duration-300"
               >
                 {loading ? "Registering..." : "✅ Confirm"}
               </button>
 
               <button
-                style={styles.secondaryBtn}
                 onClick={() => setImagePreview(null)}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 
+                           text-white py-2 rounded-lg 
+                           font-semibold transition duration-300"
               >
                 🔄 Retake
               </button>
@@ -88,84 +110,5 @@ function RegisterFace() {
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #4e73df, #1cc88a)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontFamily: "Arial, sans-serif",
-  },
-  card: {
-    background: "white",
-    padding: "40px",
-    borderRadius: "15px",
-    width: "400px",
-    textAlign: "center",
-    boxShadow: "0 15px 35px rgba(0,0,0,0.2)",
-  },
-  title: {
-    marginBottom: "5px",
-    fontSize: "24px",
-    fontWeight: "bold",
-  },
-  subtitle: {
-    marginBottom: "20px",
-    fontSize: "14px",
-    color: "#666",
-  },
-  cameraWrapper: {
-    borderRadius: "12px",
-    overflow: "hidden",
-    marginBottom: "20px",
-    border: "3px solid #4e73df",
-  },
-  webcam: {
-    width: "100%",
-  },
-  previewWrapper: {
-    marginBottom: "20px",
-  },
-  previewImage: {
-    width: "100%",
-    borderRadius: "12px",
-    border: "3px solid #1cc88a",
-  },
-  primaryBtn: {
-    backgroundColor: "#4e73df",
-    color: "white",
-    padding: "12px 20px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "15px",
-    fontWeight: "bold",
-  },
-  successBtn: {
-    backgroundColor: "#1cc88a",
-    color: "white",
-    padding: "10px 18px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
-  secondaryBtn: {
-    backgroundColor: "#858796",
-    color: "white",
-    padding: "10px 18px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
-  buttonRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "10px",
-  },
-};
 
 export default RegisterFace;
