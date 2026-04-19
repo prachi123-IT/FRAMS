@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-xszho7-3e3i-eay)iz@0#9c!@w36s%wf%an#+0b0r^(qs^jbnf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost","frams-bacend.onrender.com"]
 
 
 # Application definition
@@ -143,11 +143,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "https://frams-front-git-main-prachi123-its-projects.vercel.app",
     "https://frams-frontend.vercel.app",
+    "https://frams-steel.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://frams-steel.vercel.app",
 ]
 
 MEDIA_URL = '/media/'
