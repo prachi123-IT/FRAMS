@@ -1,7 +1,4 @@
 import base64
-import cv2
-import numpy as np
-import face_recognition
 from django.http import JsonResponse
 from .models import StudentProfile ,AcademicRecord
 from students.services.face_utils import detect_blink
@@ -89,6 +86,11 @@ def student_detail(request, student_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def register_face(request):
+    import cv2
+    import numpy as np
+    import face_recognition
+
+    # your existing code here
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=400)
 
@@ -173,6 +175,9 @@ def upload_marksheet(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_face(request):
+    import cv2
+    import numpy as np
+    import face_recognition
     if request.user.role != "STUDENT":
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
