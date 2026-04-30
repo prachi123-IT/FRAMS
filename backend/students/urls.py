@@ -3,9 +3,9 @@ from .views import student_dashboard,register_face, upload_marksheet, verify_fac
 
 urlpatterns = [
     path('dashboard/', student_dashboard),
-    path('register-face/', register_face),
+    # path('register-face/', register_face),
     path("upload-marksheet/", upload_marksheet),
-    path("verify-face/", verify_face),
+    # path("verify-face/", verify_face),
     path("profile/", get_student_profile),
     path("profile/save/", save_student_profile),
     path("students/", StudentListView.as_view()),

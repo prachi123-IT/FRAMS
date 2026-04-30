@@ -83,12 +83,12 @@ def student_detail(request, student_id):
         'year': s.year,
     })
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def register_face(request):
-    import cv2
-    import numpy as np
-    import face_recognition
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def register_face(request):
+    # import cv2
+    # import numpy as np
+    # import face_recognition
 
     # your existing code here
     if request.method != 'POST':
@@ -172,12 +172,12 @@ def upload_marksheet(request):
 
     return Response({"message": "Semester data saved"})
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def verify_face(request):
-    import cv2
-    import numpy as np
-    import face_recognition
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def verify_face(request):
+    # import cv2
+    # import numpy as np
+    # import face_recognition
     if request.user.role != "STUDENT":
         return JsonResponse({"error": "Unauthorized"}, status=403)
 
