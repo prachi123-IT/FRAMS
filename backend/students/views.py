@@ -1,7 +1,7 @@
 import base64
 from django.http import JsonResponse
 from .models import StudentProfile ,AcademicRecord
-from students.services.face_utils import detect_blink
+# from students.services.face_utils import detect_blink
 from attendance.utils import calculate_attendance_percentage
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
