@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import student_dashboard,register_face, upload_marksheet, verify_face,get_student_profile,save_student_profile,StudentListView,StudentDetailView 
+from .views import student_dashboard, upload_marksheet,get_student_profile,save_student_profile,StudentListView,StudentDetailView 
 
 urlpatterns = [
     path('dashboard/', student_dashboard),
